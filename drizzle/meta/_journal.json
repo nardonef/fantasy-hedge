@@ -8,6 +8,13 @@
       "when": 1787427506246,
       "tag": "0000_tranquil_jackpot",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787428223486,
+      "tag": "0001_fearless_infant_terrible",
+      "breakpoints": true
     }
   ]
 }

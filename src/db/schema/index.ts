@@ -2,3 +2,8 @@ export * from "./users";
 export * from "./providers";
 export * from "./players";
 export * from "./leagues";
+export * from "./games";
+export * from "./markets";
+export * from "./wallet";
+export * from "./positions";
+export * from "./settlements";

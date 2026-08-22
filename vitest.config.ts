@@ -6,6 +6,10 @@ export default defineConfig({
     environment: "node",
     passWithNoTests: true,
     setupFiles: ["dotenv/config"],
+    // Integration tests share one physical Postgres test database with no per-file
+    // isolation (no per-test transactions/schemas) — concurrent files' beforeEach
+    // truncations race against each other otherwise.
+    fileParallelism: false,
   },
   resolve: {
     alias: {

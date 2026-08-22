@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { db } from "@/db/client";
 import { users } from "@/db/schema";
+import { grantSignupBonus } from "@/lib/wallet";
 
 export async function POST(req: NextRequest) {
   const event = await verifyWebhook(req).catch(() => null);
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
 
   const name = [data.first_name, data.last_name].filter(Boolean).join(" ") || null;
 
-  await db
+  const [user] = await db
     .insert(users)
     .values({
       clerkId: data.id,
@@ -42,7 +43,12 @@ export async function POST(req: NextRequest) {
     .onConflictDoUpdate({
       target: users.clerkId,
       set: { email: primaryEmail, name, avatarUrl: data.image_url, updatedAt: new Date() },
-    });
+    })
+    .returning();
+
+  if (event.type === "user.created") {
+    await grantSignupBonus(user.id);
+  }
 
   return new Response(null, { status: 200 });
 }
