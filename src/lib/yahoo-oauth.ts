@@ -4,6 +4,9 @@ import { providerAccounts } from "@/db/schema";
 
 const YAHOO_TOKEN_URL = "https://api.login.yahoo.com/oauth2/get_token";
 
+/** HttpOnly cookie carrying the OAuth CSRF state between /api/auth/yahoo and its callback. */
+export const YAHOO_OAUTH_STATE_COOKIE = "yahoo_oauth_state";
+
 function getYahooConfig() {
   const clientId = process.env.YAHOO_CLIENT_ID;
   const clientSecret = process.env.YAHOO_CLIENT_SECRET;

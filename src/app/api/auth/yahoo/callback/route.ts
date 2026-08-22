@@ -1,10 +1,11 @@
+import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { db } from "@/db/client";
 import { providerAccounts, users } from "@/db/schema";
 import { ingestLeagueBundle } from "@/lib/ingest-league-bundle";
-import { exchangeYahooAuthorizationCode } from "@/lib/yahoo-oauth";
+import { exchangeYahooAuthorizationCode, YAHOO_OAUTH_STATE_COOKIE } from "@/lib/yahoo-oauth";
 import { createHttpYahooApi, fetchYahooLeagueBundles } from "@/providers/yahoo";
 
 function failure(message: string, status: number) {
@@ -12,13 +13,22 @@ function failure(message: string, status: number) {
 }
 
 export async function GET(req: NextRequest) {
+  // The connecting user is always the current session, never a value from the URL — `state`
+  // is checked only as a CSRF token (does this request's browser match the one that started
+  // the flow?), not trusted as identity.
+  const { userId: clerkUserId } = await auth();
+  if (!clerkUserId) return failure("Not signed in", 401);
+
   const code = req.nextUrl.searchParams.get("code");
   const error = req.nextUrl.searchParams.get("error");
-  const clerkUserId = req.nextUrl.searchParams.get("state");
+  const returnedState = req.nextUrl.searchParams.get("state");
+  const expectedState = req.cookies.get(YAHOO_OAUTH_STATE_COOKIE)?.value;
 
   if (error) return failure(`Yahoo authorization failed: ${error}`, 400);
   if (!code) return failure("Missing authorization code", 400);
-  if (!clerkUserId) return failure("Missing state — could not identify the connecting user", 400);
+  if (!expectedState || !returnedState || returnedState !== expectedState) {
+    return failure("Invalid or expired OAuth state — please try connecting again", 400);
+  }
 
   const [dbUser] = await db.select().from(users).where(eq(users.clerkId, clerkUserId)).limit(1);
   if (!dbUser) return failure("No account found for the connecting user", 400);
@@ -61,5 +71,7 @@ export async function GET(req: NextRequest) {
     await ingestLeagueBundle(account.id, bundle);
   }
 
-  return NextResponse.redirect(new URL("/connect/yahoo/success", req.url));
+  const response = NextResponse.redirect(new URL("/connect/yahoo/success", req.url));
+  response.cookies.delete(YAHOO_OAUTH_STATE_COOKIE);
+  return response;
 }
