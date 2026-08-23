@@ -77,16 +77,20 @@ async function seedGamePropMarket(threshold = 74.5) {
 
 describe("buy -> lock -> settle (game props)", () => {
   beforeEach(async () => {
-    await db.delete(trades);
-    await db.delete(ledgerEntries);
-    await db.delete(positions);
-    await db.delete(settlements);
-    await db.delete(contracts);
-    await db.delete(markets);
-    await db.delete(nflGames);
-    await db.delete(players);
-    await db.delete(wallets);
-    await db.delete(users);
+    // One transaction, not sequential autocommit statements — guarantees every delete lands on
+    // the same connection in FK-dependency order with no visibility gap between them.
+    await db.transaction(async (tx) => {
+      await tx.delete(trades);
+      await tx.delete(ledgerEntries);
+      await tx.delete(positions);
+      await tx.delete(settlements);
+      await tx.delete(contracts);
+      await tx.delete(markets);
+      await tx.delete(nflGames);
+      await tx.delete(players);
+      await tx.delete(wallets);
+      await tx.delete(users);
+    });
   });
 
   it("pays out the winning side and marks losing positions settled with no payout", async () => {

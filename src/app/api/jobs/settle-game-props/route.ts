@@ -1,11 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { runGamePropSettlements } from "@/lib/settlement/run-game-prop-settlements";
-import { createMockStatsFeedClient } from "@/lib/stats-feed/mock-client";
+import { createNflverseStatsFeedClient } from "@/lib/stats-feed/nflverse/nflverse-client";
 
-// TODO(Phase 5): swap for a real StatsFeedClient once a sports-data vendor is chosen. Until
-// then this job has no games to resolve against — it's the wiring, not the data source.
-const statsFeed = createMockStatsFeedClient({ gameStatuses: {}, playerGameStats: {} });
+const statsFeed = createNflverseStatsFeedClient();
 
 /**
  * Cron-triggered, not user-triggered — exempted from Clerk session auth in proxy.ts, so it's

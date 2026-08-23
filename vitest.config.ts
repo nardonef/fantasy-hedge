@@ -3,6 +3,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     include: ["src/**/*.test.ts", "tests/**/*.test.ts"],
+    // Real-network vendor contract tests — run explicitly via `pnpm test:live`, never in the
+    // default run or CI (they hit github.com/nflverse and raw.githubusercontent.com live).
+    exclude: ["**/node_modules/**", "**/*.live.test.ts"],
     environment: "node",
     passWithNoTests: true,
     setupFiles: ["dotenv/config"],

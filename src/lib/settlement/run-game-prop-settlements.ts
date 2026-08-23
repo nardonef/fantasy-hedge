@@ -3,16 +3,26 @@ import { db } from "@/db/client";
 import { contracts, markets } from "@/db/schema";
 import type { StatsFeedClient } from "@/lib/stats-feed/types";
 import { settleGameProp } from "./game-prop-settlement";
+import { runMarketWithAudit } from "./job-runner";
 import { settleMarketTx, voidMarketTx } from "./settlement-transaction";
 
-export type GamePropSettlementOutcome = "SETTLED" | "PUSH" | "SKIPPED_NOT_FINAL" | "SKIPPED_NO_STAT";
+export const GAME_PROP_JOB_TYPE = "settle-game-props";
+
+export type GamePropSettlementOutcome =
+  | "SETTLED"
+  | "PUSH"
+  | "SKIPPED_NOT_FINAL"
+  | "SKIPPED_NO_STAT"
+  | "SKIPPED_BACKOFF"
+  | "FAILED";
 export type GamePropSettlementRunResult = { marketId: string; outcome: GamePropSettlementOutcome };
 
 /**
  * Finds every open/locked GAME_PROP market whose game has gone FINAL, resolves it via the
  * pure settleGameProp function, and writes the settlement + position/ledger updates in one
- * transaction per market. Safe to re-run — already-settled/voided markets are excluded by the
- * status filter, and every ledger write is independently idempotent besides.
+ * transaction per market. Each market's attempt is independently audited and backed off via
+ * runMarketWithAudit — one market's failure doesn't block its siblings, and a repeatedly
+ * failing market doesn't get retried on every single cron tick.
  */
 export async function runGamePropSettlements(
   statsFeed: StatsFeedClient,
@@ -42,18 +52,22 @@ export async function runGamePropSettlements(
       continue;
     }
 
-    const settlementResult = settleGameProp(actualValue, market.thresholdValue);
-    const marketContracts = await db.select().from(contracts).where(eq(contracts.marketId, market.id));
+    const result = await runMarketWithAudit(GAME_PROP_JOB_TYPE, market.id, async () => {
+      const settlementResult = settleGameProp(actualValue, market.thresholdValue);
+      const marketContracts = await db.select().from(contracts).where(eq(contracts.marketId, market.id));
 
-    await db.transaction(async (tx) => {
-      if (settlementResult.outcome === "PUSH") {
-        await voidMarketTx(tx, market.id, marketContracts);
-      } else {
-        await settleMarketTx(tx, market.id, marketContracts, settlementResult.payouts, { actualValue });
-      }
+      await db.transaction(async (tx) => {
+        if (settlementResult.outcome === "PUSH") {
+          await voidMarketTx(tx, market.id, marketContracts);
+        } else {
+          await settleMarketTx(tx, market.id, marketContracts, settlementResult.payouts, { actualValue });
+        }
+      });
+
+      return { outcome: settlementResult.outcome };
     });
 
-    results.push({ marketId: market.id, outcome: settlementResult.outcome });
+    results.push(result as GamePropSettlementRunResult);
   }
 
   return results;
