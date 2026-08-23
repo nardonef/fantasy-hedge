@@ -1,16 +1,8 @@
 import { eq } from "drizzle-orm";
-import type { PgTransaction } from "drizzle-orm/pg-core";
-import type { PostgresJsDatabase } from "drizzle-orm/postgres-js";
-import type { PostgresJsQueryResultHKT } from "drizzle-orm/postgres-js/session";
-import type * as schema from "@/db/schema";
+import type { Executor } from "@/db/executor";
 import type { Provider } from "@/db/schema";
 import { playerExternalIds, players } from "@/db/schema";
 import type { NormalizedPlayer } from "@/providers/types";
-
-/** Either the top-level db handle or a transaction — both expose the same query builder API. */
-type Executor =
-  | PostgresJsDatabase<typeof schema>
-  | PgTransaction<PostgresJsQueryResultHKT, typeof schema>;
 
 /** Lowercased, punctuation-stripped — the reconciliation key across providers. */
 export function normalizePlayerName(name: string): string {

@@ -56,3 +56,6 @@ export const contracts = pgTable(
   },
   (t) => [uniqueIndex("contracts_market_label_ux").on(t.marketId, t.label)],
 );
+
+export type Market = typeof markets.$inferSelect;
+export type Contract = typeof contracts.$inferSelect;

@@ -6,6 +6,8 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/api/health",
   "/api/webhooks(.*)",
+  // Cron-triggered, not user-triggered — gated by its own shared secret instead (see the route).
+  "/api/jobs(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
