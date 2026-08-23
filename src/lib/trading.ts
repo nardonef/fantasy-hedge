@@ -81,20 +81,25 @@ export async function buyContract(
       ledgerEntryId: ledgerEntry.id,
     });
 
-    const marketContracts = await tx.select().from(contracts).where(eq(contracts.marketId, market.id));
-    const overContract = marketContracts.find((c) => c.label === "OVER");
-    const underContract = marketContracts.find((c) => c.label === "UNDER");
-    if (overContract && underContract) {
-      const currentPrices: GamePropPrices = { OVER: overContract.currentPrice, UNDER: underContract.currentPrice };
-      const newPrices = repriceAfterTrade(currentPrices, contract.label as GamePropSide, quantity);
-      await tx
-        .update(contracts)
-        .set({ currentPrice: newPrices.OVER, updatedAt: new Date() })
-        .where(eq(contracts.id, overContract.id));
-      await tx
-        .update(contracts)
-        .set({ currentPrice: newPrices.UNDER, updatedAt: new Date() })
-        .where(eq(contracts.id, underContract.id));
+    // Only GAME_PROP reprices per-trade — it's the one that needs to feel live. SEASON_PRODUCTION
+    // and INJURY_PROTECTION only reprice via their weekly job (low volume, long horizon; a
+    // single trade skewing the line doesn't mean much for either).
+    if (market.marketType === "GAME_PROP") {
+      const marketContracts = await tx.select().from(contracts).where(eq(contracts.marketId, market.id));
+      const overContract = marketContracts.find((c) => c.label === "OVER");
+      const underContract = marketContracts.find((c) => c.label === "UNDER");
+      if (overContract && underContract) {
+        const currentPrices: GamePropPrices = { OVER: overContract.currentPrice, UNDER: underContract.currentPrice };
+        const newPrices = repriceAfterTrade(currentPrices, contract.label as GamePropSide, quantity);
+        await tx
+          .update(contracts)
+          .set({ currentPrice: newPrices.OVER, updatedAt: new Date() })
+          .where(eq(contracts.id, overContract.id));
+        await tx
+          .update(contracts)
+          .set({ currentPrice: newPrices.UNDER, updatedAt: new Date() })
+          .where(eq(contracts.id, underContract.id));
+      }
     }
 
     return { tradeId, marketId: market.id, balanceAfter: ledgerEntry.balanceAfter };

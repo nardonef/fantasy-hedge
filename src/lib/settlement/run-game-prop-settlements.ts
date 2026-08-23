@@ -1,82 +1,12 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { db } from "@/db/client";
-import type { Executor } from "@/db/executor";
-import { type Contract, contracts, markets, positions, settlements } from "@/db/schema";
-import type { GamePropSide } from "@/lib/pricing/game-prop-pricing";
+import { contracts, markets } from "@/db/schema";
 import type { StatsFeedClient } from "@/lib/stats-feed/types";
-import { getOrCreateWalletTx, writeLedgerEntryTx } from "@/lib/wallet";
 import { settleGameProp } from "./game-prop-settlement";
+import { settleMarketTx, voidMarketTx } from "./settlement-transaction";
 
 export type GamePropSettlementOutcome = "SETTLED" | "PUSH" | "SKIPPED_NOT_FINAL" | "SKIPPED_NO_STAT";
 export type GamePropSettlementRunResult = { marketId: string; outcome: GamePropSettlementOutcome };
-
-async function settleMarketTx(
-  tx: Executor,
-  marketId: string,
-  marketContracts: Contract[],
-  payouts: Record<GamePropSide, number>,
-  actualValue: number,
-) {
-  await tx.update(markets).set({ status: "SETTLED", resolvedAt: new Date() }).where(eq(markets.id, marketId));
-
-  const payoutsByContractId: Record<string, number> = {};
-  for (const c of marketContracts) payoutsByContractId[c.id] = payouts[c.label as GamePropSide] ?? 0;
-
-  await tx.insert(settlements).values({
-    marketId,
-    payouts: payoutsByContractId,
-    resolutionSource: "STATS_FEED",
-    resolutionData: { actualValue },
-  });
-
-  const contractIds = marketContracts.map((c) => c.id);
-  const openPositions = await tx
-    .select()
-    .from(positions)
-    .where(and(inArray(positions.contractId, contractIds), eq(positions.status, "OPEN")));
-
-  for (const position of openPositions) {
-    await tx.update(positions).set({ status: "SETTLED", updatedAt: new Date() }).where(eq(positions.id, position.id));
-
-    const payoutRatio = payoutsByContractId[position.contractId] ?? 0;
-    if (payoutRatio <= 0) continue;
-
-    const wallet = await getOrCreateWalletTx(tx, position.userId);
-    await writeLedgerEntryTx(tx, {
-      walletId: wallet.id,
-      type: "SETTLEMENT_PAYOUT",
-      amount: Math.round(payoutRatio * 100) * position.quantity,
-      idempotencyKey: `settlement-payout:${position.id}`,
-      relatedPositionId: position.id,
-      relatedMarketId: marketId,
-    });
-  }
-}
-
-/** A push doesn't fit the flat payoutRatio model — void the market and refund each position's own stake. */
-async function voidMarketTx(tx: Executor, marketId: string, marketContracts: Contract[]) {
-  await tx.update(markets).set({ status: "VOID", resolvedAt: new Date() }).where(eq(markets.id, marketId));
-
-  const contractIds = marketContracts.map((c) => c.id);
-  const openPositions = await tx
-    .select()
-    .from(positions)
-    .where(and(inArray(positions.contractId, contractIds), eq(positions.status, "OPEN")));
-
-  for (const position of openPositions) {
-    await tx.update(positions).set({ status: "VOIDED", updatedAt: new Date() }).where(eq(positions.id, position.id));
-
-    const wallet = await getOrCreateWalletTx(tx, position.userId);
-    await writeLedgerEntryTx(tx, {
-      walletId: wallet.id,
-      type: "REFUND_VOID",
-      amount: Math.round(position.avgEntryPrice * 100) * position.quantity,
-      idempotencyKey: `refund-void:${position.id}`,
-      relatedPositionId: position.id,
-      relatedMarketId: marketId,
-    });
-  }
-}
 
 /**
  * Finds every open/locked GAME_PROP market whose game has gone FINAL, resolves it via the
@@ -119,7 +49,7 @@ export async function runGamePropSettlements(
       if (settlementResult.outcome === "PUSH") {
         await voidMarketTx(tx, market.id, marketContracts);
       } else {
-        await settleMarketTx(tx, market.id, marketContracts, settlementResult.payouts, actualValue);
+        await settleMarketTx(tx, market.id, marketContracts, settlementResult.payouts, { actualValue });
       }
     });
 

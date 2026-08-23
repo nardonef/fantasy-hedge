@@ -18,7 +18,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "seed:game-props": "tsx scripts/seed-game-prop-markets.ts"
+    "seed:game-props": "tsx scripts/seed-game-prop-markets.ts",
+    "seed:season-production": "tsx scripts/seed-season-production-markets.ts",
+    "seed:injury-protection": "tsx scripts/seed-injury-protection-markets.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.7.6",
