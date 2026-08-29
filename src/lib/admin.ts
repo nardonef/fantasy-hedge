@@ -10,15 +10,20 @@ function adminEmails(): string[] {
     .filter(Boolean);
 }
 
-/** Throws unless the signed-in user's email is on the ADMIN_USER_EMAILS allowlist. */
-export async function requireAdmin(): Promise<void> {
+/** True if the signed-in user's email is on the ADMIN_USER_EMAILS allowlist. False if signed out. */
+export async function isAdmin(): Promise<boolean> {
   const { userId: clerkId } = await auth();
-  if (!clerkId) throw new Error("Not signed in");
+  if (!clerkId) return false;
 
   const [dbUser] = await db.select().from(users).where(eq(users.clerkId, clerkId)).limit(1);
-  if (!dbUser) throw new Error("No local user record");
+  if (!dbUser) return false;
 
-  if (!adminEmails().includes(dbUser.email.toLowerCase())) {
+  return adminEmails().includes(dbUser.email.toLowerCase());
+}
+
+/** Throws unless the signed-in user's email is on the ADMIN_USER_EMAILS allowlist. */
+export async function requireAdmin(): Promise<void> {
+  if (!(await isAdmin())) {
     throw new Error("Not authorized");
   }
 }

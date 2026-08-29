@@ -1,4 +1,5 @@
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { Show, SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -20,7 +21,12 @@ export default function Home() {
         </SignInButton>
       </Show>
       <Show when="signed-in">
-        <UserButton />
+        <Link
+          href="/connect"
+          className="rounded-full bg-foreground px-5 py-3 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc]"
+        >
+          Connect your league
+        </Link>
       </Show>
     </div>
   );
