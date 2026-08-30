@@ -15,11 +15,11 @@ export function ClaimBonusButton() {
         className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
         onClick={() =>
           startTransition(async () => {
-            try {
-              const { balance } = await claimSignupBonus();
-              setMessage(`Balance: ${(balance / 100).toFixed(2)}`);
-            } catch (error) {
-              setMessage(error instanceof Error ? error.message : "Failed to claim bonus");
+            const result = await claimSignupBonus();
+            if (result.ok) {
+              setMessage(`Balance: ${(result.data.balance / 100).toFixed(2)}`);
+            } else {
+              setMessage(result.error);
             }
           })
         }

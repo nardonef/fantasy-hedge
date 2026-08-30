@@ -9,7 +9,7 @@ process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
 
 const { db } = await import("@/db/client");
 const { eq } = await import("drizzle-orm");
-const { ledgerEntries, users, wallets } = await import("@/db/schema");
+const { ledgerEntries, trades, users, wallets } = await import("@/db/schema");
 const { getOrCreateWallet, grantSignupBonus, reconcileWalletBalance, writeLedgerEntry } =
   await import("./wallet");
 
@@ -23,9 +23,14 @@ async function seedUser() {
 
 describe("wallet", () => {
   beforeEach(async () => {
-    await db.delete(ledgerEntries);
-    await db.delete(wallets);
-    await db.delete(users);
+    // trades.ledgerEntryId has no cascade — a trade left behind by another test file (e.g. via
+    // buyContract) blocks deleting the ledgerEntries row it references unless cleared first.
+    await db.transaction(async (tx) => {
+      await tx.delete(trades);
+      await tx.delete(ledgerEntries);
+      await tx.delete(wallets);
+      await tx.delete(users);
+    });
   });
 
   describe("getOrCreateWallet", () => {

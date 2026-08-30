@@ -15,11 +15,12 @@ export function SleeperConnectForm() {
         e.preventDefault();
         setMessage(null);
         startTransition(async () => {
-          try {
-            const { leaguesSynced } = await connectSleeper(username);
+          const result = await connectSleeper(username);
+          if (result.ok) {
+            const { leaguesSynced } = result.data;
             setMessage(`Synced ${leaguesSynced} league${leaguesSynced === 1 ? "" : "s"}.`);
-          } catch (error) {
-            setMessage(error instanceof Error ? error.message : "Failed to connect Sleeper");
+          } else {
+            setMessage(result.error);
           }
         });
       }}

@@ -33,12 +33,8 @@ export function SettleForm({ marketId, contracts }: { marketId: string; contract
           onClick={() =>
             startTransition(async () => {
               setMessage(null);
-              try {
-                await manuallySettleMarket(marketId, selected);
-                setMessage("Settled.");
-              } catch (error) {
-                setMessage(error instanceof Error ? error.message : "Failed to settle");
-              }
+              const result = await manuallySettleMarket(marketId, selected);
+              setMessage(result.ok ? "Settled." : result.error);
             })
           }
         >
@@ -51,12 +47,8 @@ export function SettleForm({ marketId, contracts }: { marketId: string; contract
           onClick={() =>
             startTransition(async () => {
               setMessage(null);
-              try {
-                await manuallyVoidMarket(marketId);
-                setMessage("Voided.");
-              } catch (error) {
-                setMessage(error instanceof Error ? error.message : "Failed to void");
-              }
+              const result = await manuallyVoidMarket(marketId);
+              setMessage(result.ok ? "Voided." : result.error);
             })
           }
         >

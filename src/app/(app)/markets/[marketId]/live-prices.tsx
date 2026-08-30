@@ -59,11 +59,11 @@ export function LivePrices({
               onClick={() =>
                 startTransition(async () => {
                   setMessage(null);
-                  try {
-                    const { balanceAfter } = await buyContract(c.id, quantities[c.id] ?? 1);
-                    setMessage(`Bought. New balance: ${(balanceAfter / 100).toFixed(2)}`);
-                  } catch (error) {
-                    setMessage(error instanceof Error ? error.message : "Trade failed");
+                  const result = await buyContract(c.id, quantities[c.id] ?? 1);
+                  if (result.ok) {
+                    setMessage(`Bought. New balance: ${(result.data.balanceAfter / 100).toFixed(2)}`);
+                  } else {
+                    setMessage(result.error);
                   }
                 })
               }
