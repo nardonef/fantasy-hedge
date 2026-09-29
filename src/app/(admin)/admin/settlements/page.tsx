@@ -27,21 +27,21 @@ export default async function AdminSettlementsPage() {
           .where(inArray(contracts.marketId, openMarkets.map(({ market }) => market.id)));
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-1 flex-col gap-6 px-6 py-16">
+    <div className="mx-auto flex max-w-2xl flex-1 flex-col gap-6 px-6 py-12">
       <div>
-        <h1 className="text-2xl font-semibold">Manual settlement override</h1>
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <h1 className="text-4xl font-semibold leading-none tracking-[-0.04em]">Manual settlement override</h1>
+        <p className="text-sm text-chalk-faint">
           Settle or void a market by hand — for when the automated stats feed can't resolve it, or
           you don't trust its result (e.g. the injury-protection games-missed proxy).
         </p>
       </div>
       {openMarkets.length === 0 ? (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">No open markets.</p>
+        <p className="text-sm text-chalk-faint">No open markets.</p>
       ) : (
         <ul className="flex flex-col gap-4">
           {openMarkets.map(({ market, playerName }) => (
             <li key={market.id} className="flex flex-col gap-2">
-              <p className="font-medium">
+              <p className="font-semibold">
                 {playerName} — {market.marketType} — {market.statCategory}
               </p>
               <SettleForm

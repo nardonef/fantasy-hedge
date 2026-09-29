@@ -1,26 +1,80 @@
 @import "tailwindcss";
 
+/* Fantasy brand tokens (1a "Period"). */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --page: #060607;
+  --field: #0a0a0b;
+  --raised: #16161a;
+  --raised-2: #101014;
+  --input-bg: #0e0e16;
+  --hairline: #1c1c21;
+  --hairline-2: #26262e;
+  --input-border: #262633;
+  --chalk: #fafafa;
+  --chalk-dim: #a1a1aa;
+  --chalk-faint: #71717a;
+  --chalk-muted: #52525b;
+  --chalk-faintest: #3f3f46;
+  --placeholder: #4a4a58;
+  --signal: #5b8cff;
+  --rankings: #4cd48f;
+  --hedge: #f2b441;
+  --regret: #ff4a31;
+  --flag-yellow: #e6c34a; /* Rankings tier flag only; softer than Hedge amber */
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-page: var(--page);
+  --color-field: var(--field);
+  --color-raised: var(--raised);
+  --color-raised-2: var(--raised-2);
+  --color-input-bg: var(--input-bg);
+  --color-hairline: var(--hairline);
+  --color-hairline-2: var(--hairline-2);
+  --color-chalk: var(--chalk);
+  --color-chalk-dim: var(--chalk-dim);
+  --color-chalk-faint: var(--chalk-faint);
+  --color-chalk-muted: var(--chalk-muted);
+  --color-chalk-faintest: var(--chalk-faintest);
+  --color-signal: var(--signal);
+  --color-rankings: var(--rankings);
+  --color-hedge: var(--hedge);
+  --color-regret: var(--regret);
+  --color-flag-yellow: var(--flag-yellow);
+  --color-tool: var(--tool);
+}
+
+/* Utility patterns used across the reskins */
+@utility kicker {
+  font-family: var(--font-geist-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+@utility pill {
+  font-family: var(--font-geist-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 99px;
+  border: 1px solid;
+}
+
+html { background: var(--page); }
+::selection { background: var(--tool); color: #0a0a0b; }
+
+:root { --tool: #f2b441; }
+
+@theme inline {
+  --color-background: var(--page);
+  --color-foreground: var(--chalk);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page);
+  color: var(--chalk);
 }

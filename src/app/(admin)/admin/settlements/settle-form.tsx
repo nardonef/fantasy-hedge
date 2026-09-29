@@ -11,7 +11,7 @@ export function SettleForm({ marketId, contracts }: { marketId: string; contract
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="flex flex-col gap-2 rounded border border-zinc-300 p-3 dark:border-zinc-700">
+    <div className="flex flex-col gap-2 rounded-xl border border-hairline-2 bg-raised-2 p-3">
       <fieldset className="flex flex-wrap gap-3">
         {contracts.map((c) => (
           <label key={c.id} className="flex items-center gap-1 text-sm">
@@ -29,7 +29,7 @@ export function SettleForm({ marketId, contracts }: { marketId: string; contract
         <button
           type="button"
           disabled={isPending}
-          className="rounded bg-foreground px-3 py-1 text-sm text-background disabled:opacity-50"
+          className="h-9 rounded-[9px] bg-hedge px-3 text-sm font-semibold text-[#0a0a0b] disabled:opacity-50"
           onClick={() =>
             startTransition(async () => {
               setMessage(null);
@@ -43,7 +43,7 @@ export function SettleForm({ marketId, contracts }: { marketId: string; contract
         <button
           type="button"
           disabled={isPending}
-          className="rounded border border-zinc-400 px-3 py-1 text-sm disabled:opacity-50"
+          className="h-9 rounded-[9px] border border-hairline-2 px-3 text-sm disabled:opacity-50"
           onClick={() =>
             startTransition(async () => {
               setMessage(null);
@@ -55,7 +55,7 @@ export function SettleForm({ marketId, contracts }: { marketId: string; contract
           Void (refund all)
         </button>
       </div>
-      {message && <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>}
+      {message && <p className="text-sm text-chalk-faint">{message}</p>}
     </div>
   );
 }

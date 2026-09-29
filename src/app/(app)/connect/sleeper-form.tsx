@@ -33,18 +33,18 @@ export function SleeperConnectForm() {
           id="sleeper-username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="flex-1 rounded border border-zinc-300 px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          className="flex-1 h-11 rounded-[9px] border border-input-border bg-input-bg px-3 placeholder:text-placeholder"
           placeholder="your-sleeper-username"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="rounded bg-foreground px-4 py-2 text-background disabled:opacity-50"
+          className="h-11 rounded-[9px] bg-hedge px-5 font-semibold text-[#0a0a0b] disabled:opacity-50"
         >
           {isPending ? "Connecting…" : "Connect"}
         </button>
       </div>
-      {message && <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>}
+      {message && <p className="text-sm text-chalk-faint">{message}</p>}
     </form>
   );
 }
