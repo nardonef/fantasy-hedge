@@ -33,7 +33,7 @@ export function SleeperConnectForm() {
           id="sleeper-username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="flex-1 h-11 rounded-[9px] border border-input-border bg-input-bg px-3 placeholder:text-placeholder"
+          className="flex-1 h-11 rounded-[9px] border border-[#262633] bg-input-bg px-3 placeholder:text-[#4a4a58]"
           placeholder="your-sleeper-username"
         />
         <button

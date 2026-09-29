@@ -54,7 +54,7 @@ export function LivePrices({
               onChange={(e) =>
                 setQuantities((prev) => ({ ...prev, [c.id]: Math.max(1, Number(e.target.value)) }))
               }
-              className="h-[38px] w-14 rounded-lg border border-input-border bg-input-bg text-center font-mono"
+              className="h-[38px] w-14 rounded-lg border border-[#262633] bg-input-bg text-center font-mono"
             />
             <button
               type="button"
