@@ -19,7 +19,7 @@ export function LivePrices({
   const [contractsState, setContracts] = useState(initialContracts);
   const [status, setStatus] = useState(initialStatus);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
-  const [message, setMessage] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -34,36 +34,40 @@ export function LivePrices({
   }, [marketId]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {contractsState.map((c) => (
-        <div key={c.id} className="flex items-center justify-between gap-4 rounded border border-zinc-300 p-3 dark:border-zinc-700">
-          <div>
-            <p className="font-medium">{c.label}</p>
-            <p className="font-mono text-sm text-zinc-600 dark:text-zinc-400">{c.currentPrice.toFixed(3)}</p>
+        <div
+          key={c.id}
+          className="flex items-center justify-between gap-3 rounded-xl border border-[#22222a] bg-raised-2 p-3.5"
+        >
+          <div className="flex flex-col gap-1">
+            <p className="text-base font-semibold">{c.label}</p>
+            <p className="font-mono text-[22px] font-medium">{c.currentPrice.toFixed(3)}</p>
           </div>
           <div className="flex items-center gap-2">
             <input
               type="number"
               min={1}
               step={1}
+              aria-label={`Quantity for ${c.label}`}
               value={quantities[c.id] ?? 1}
               onChange={(e) =>
                 setQuantities((prev) => ({ ...prev, [c.id]: Math.max(1, Number(e.target.value)) }))
               }
-              className="w-16 rounded border border-zinc-300 px-2 py-1 dark:border-zinc-700 dark:bg-zinc-900"
+              className="h-[38px] w-14 rounded-lg border border-[#262633] bg-input-bg text-center font-mono"
             />
             <button
               type="button"
               disabled={isPending || status !== "OPEN"}
-              className="rounded bg-foreground px-3 py-1 text-background disabled:opacity-50"
+              className="h-[38px] rounded-lg bg-hedge px-4 font-mono text-xs font-medium uppercase tracking-[0.16em] text-[#0a0a0b] disabled:opacity-40"
               onClick={() =>
                 startTransition(async () => {
                   setMessage(null);
                   const result = await buyContract(c.id, quantities[c.id] ?? 1);
                   if (result.ok) {
-                    setMessage(`Bought. New balance: ${(result.data.balanceAfter / 100).toFixed(2)}`);
+                    setMessage({ ok: true, text: (result.data.balanceAfter / 100).toFixed(2) });
                   } else {
-                    setMessage(result.error);
+                    setMessage({ ok: false, text: result.error });
                   }
                 })
               }
@@ -73,10 +77,36 @@ export function LivePrices({
           </div>
         </div>
       ))}
-      {status !== "OPEN" && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">Market is {status.toLowerCase()}.</p>
+      {message && (
+        <p
+          className={`flex h-11 items-center gap-2.5 rounded-[9px] border px-3.5 text-sm ${
+            message.ok ? "border-hedge/25 bg-hedge/[.08]" : "border-regret/25 bg-regret/[.08]"
+          }`}
+        >
+          {message.ok && <span aria-hidden className="size-[7px] rounded-full bg-hedge" />}
+          {message.ok ? (
+            <span>
+              Bought. New balance: <span className="font-mono">{message.text}</span>
+            </span>
+          ) : (
+            message.text
+          )}
+        </p>
       )}
-      {message && <p className="text-sm text-zinc-600 dark:text-zinc-400">{message}</p>}
+      <p className="kicker flex items-center gap-2 text-chalk-muted">
+        {status === "OPEN" ? (
+          <>
+            <span aria-hidden className="size-[7px] rounded-full bg-[#4cd48f]" />
+            OPEN · PRICES REFRESH EVERY {POLL_INTERVAL_MS / 1000}S
+          </>
+        ) : (
+          <>
+            <span aria-hidden className="size-[7px] rounded-full bg-[#71717a]" />
+            MARKET IS {status}
+          </>
+        )}
+      </p>
+      <p className="text-[13px] text-chalk-muted">Virtual coins only. Hope you never collect.</p>
     </div>
   );
 }

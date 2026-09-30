@@ -33,25 +33,25 @@ export default async function ConnectPage() {
   const hasSleeper = accounts.some((a) => a.provider === "sleeper");
 
   return (
-    <div className="mx-auto flex max-w-xl flex-1 flex-col gap-8 px-6 py-16">
-      <h1 className="text-2xl font-semibold">Connect your leagues</h1>
+    <div className="mx-auto flex max-w-xl flex-1 flex-col gap-8 px-6 py-12">
+      <h1 className="text-4xl font-semibold leading-none tracking-[-0.04em]">Connect your leagues</h1>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-medium">Sleeper</h2>
+        <h2 className="text-xl font-semibold tracking-[-0.025em]">Sleeper</h2>
         {hasSleeper ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Sleeper account connected.</p>
+          <p className="text-sm text-chalk-faint">Sleeper account connected.</p>
         ) : null}
         <SleeperConnectForm />
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-medium">Yahoo</h2>
+        <h2 className="text-xl font-semibold tracking-[-0.025em]">Yahoo</h2>
         {hasYahoo ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">Yahoo account connected.</p>
+          <p className="text-sm text-chalk-faint">Yahoo account connected.</p>
         ) : (
           <a
             href="/api/auth/yahoo"
-            className="inline-block w-fit rounded bg-foreground px-4 py-2 text-background"
+            className="inline-flex h-11 w-fit items-center rounded-[9px] bg-hedge px-5 font-semibold text-[#0a0a0b]"
           >
             Connect Yahoo
           </a>
@@ -59,15 +59,21 @@ export default async function ConnectPage() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="font-medium">Your leagues</h2>
+        <h2 className="text-xl font-semibold tracking-[-0.025em]">Your leagues</h2>
         {connectedLeagues.length === 0 ? (
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">No leagues connected yet.</p>
+          <p className="text-sm text-chalk-faint">No leagues connected yet.</p>
         ) : (
-          <ul className="flex flex-col gap-2">
+          <ul className="border-t border-hairline">
             {connectedLeagues.map((l) => (
               <li key={l.id}>
-                <Link href={`/leagues/${l.id}`} className="underline">
-                  {l.name} ({l.provider}, {l.season})
+                <Link
+                  href={`/leagues/${l.id}`}
+                  className="flex items-baseline justify-between gap-4 border-b border-hairline px-3 py-3.5 hover:bg-[#0c0c0f]"
+                >
+                  <span className="font-semibold">{l.name}</span>
+                  <span className="font-mono text-xs text-chalk-dim">
+                    {l.provider} · {l.season}
+                  </span>
                 </Link>
               </li>
             ))}

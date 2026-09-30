@@ -15,13 +15,25 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Fantasy Hedge",
+  title: "fantasy·hedge",
   description: "Hedge your fantasy football roster with prediction markets.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        variables: {
+          colorPrimary: "#f2b441",
+          colorBackground: "#0a0a0b",
+          colorForeground: "#fafafa",
+          colorInput: "#0e0e16",
+          colorInputForeground: "#fafafa",
+          borderRadius: "9px",
+          fontFamily: "Geist",
+        },
+      }}
+    >
       <html
         lang="en"
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
