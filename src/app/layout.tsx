@@ -2,7 +2,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { NavBar } from "./nav-bar";
+import { hedgeLocalization } from "@/lib/clerk-localization";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +22,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <ClerkProvider
+      localization={hedgeLocalization}
       appearance={{
+        cssLayerName: "clerk",
         variables: {
           colorPrimary: "#f2b441",
           colorBackground: "#0a0a0b",
@@ -36,10 +38,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <html
         lang="en"
-        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">
-          <NavBar />
           {children}
         </body>
       </html>

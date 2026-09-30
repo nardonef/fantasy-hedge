@@ -2,11 +2,12 @@ import Link from "next/link";
 
 const DOT_COLOR = { hedge: "bg-hedge", rankings: "bg-rankings" } as const;
 
-export function Wordmark({ tool }: { tool: keyof typeof DOT_COLOR }) {
+export function Wordmark({ tool, size = 20 }: { tool: keyof typeof DOT_COLOR; size?: number }) {
   return (
     <Link
       href="/"
-      className="text-[20px] font-semibold tracking-[-0.045em] text-chalk"
+      style={{ fontSize: size }}
+      className="font-semibold tracking-[-0.045em] text-chalk"
       aria-label={`fantasy ${tool}`}
     >
       fantasy
