@@ -23,6 +23,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <ClerkProvider
       localization={hedgeLocalization}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
       appearance={{
         cssLayerName: "clerk",
         variables: {
