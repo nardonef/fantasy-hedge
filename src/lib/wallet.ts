@@ -2,9 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "@/db/client";
 import type { Executor } from "@/db/executor";
 import { type LedgerEntryType, ledgerEntries, wallets } from "@/db/schema";
-
-/** Virtual-currency minor units granted to every new wallet. */
-const SIGNUP_GRANT_AMOUNT = 100_000;
+import { SIGNUP_GRANT_AMOUNT } from "./wallet-constants";
 
 export async function getOrCreateWalletTx(executor: Executor, userId: string) {
   const [existing] = await executor.select().from(wallets).where(eq(wallets.userId, userId)).limit(1);
